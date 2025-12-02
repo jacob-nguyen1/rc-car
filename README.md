@@ -4,7 +4,7 @@ custom drivers:
 - GPIO
 
 current implementation:
-- press button to move forward
+- pressing button moves forward
 
 plans:
 - turning using pwm
