@@ -1,0 +1,2 @@
+../Core/Src/gpio.c:3:6:GPIO_SetMode	16	static
+../Core/Src/gpio.c:8:6:GPIO_Write	16	static
