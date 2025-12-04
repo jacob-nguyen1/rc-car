@@ -25,12 +25,16 @@ int main(void) {
     GPIO_SetMode(GPIOA, 5, GPIO_MODE_AF);
     GPIO_SetAF(GPIOA, 5, 1);
     PWM_INIT(TIM2, 1, 1000);
+
+    int x = 0;
     while(1) {
-    	while(1);
+    	for (volatile int i =0; i < 20000; i++);
+    	x++;
+    	PWM_SetDutyCycle(TIM2, 1, x%101);
     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) {
-    		//CarForward();
+    		CarForward();
     	} else {
-    		//CarStop();
+    		CarStop();
     	}
 
     }

@@ -8,6 +8,7 @@
 #define PWM_MODE1 0b110 // active when TIMx_CNT<TIMx_CCR1 else inactive
 #define PWM_MODE2 0b111 // inactive when TIMx_CNT<TIMx_CCR1 else active
 
-void PWM_INIT(TIM_TypeDef* tim, uint8_t ch, uint16_t freq);
+void PWM_INIT(TIM_TypeDef* timer, uint8_t channel, uint16_t freq);
+void PWM_SetDutyCycle(TIM_TypeDef* timer, uint8_t channel, uint8_t duty);
 
 #endif
