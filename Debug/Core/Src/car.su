@@ -1,0 +1,3 @@
+../Core/Src/car.c:3:6:SetWheelDir	16	static
+../Core/Src/car.c:40:6:CarForward	8	static
+../Core/Src/car.c:45:6:CarStop	8	static

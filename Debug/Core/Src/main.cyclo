@@ -1,4 +1,1 @@
-../Core/Src/main.c:22:5:main	2
-../Core/Src/main.c:49:6:SetWheelDir	11
-../Core/Src/main.c:86:6:CarForward	1
-../Core/Src/main.c:91:6:CarStop	1
+../Core/Src/main.c:8:5:main	1
