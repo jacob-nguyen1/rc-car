@@ -14,4 +14,10 @@ void GPIO_SetMode(GPIO_TypeDef* port, uint8_t pin, uint8_t mode);
 void GPIO_Write(GPIO_TypeDef* port, uint8_t pin, bool val);
 void GPIO_SetAF(GPIO_TypeDef* port, uint8_t pin, uint8_t af);
 
+#define GPIO_INT_RISING  0
+#define GPIO_INT_FALLING 1
+#define GPIO_INT_BOTH    2
+
+void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, uint8_t activation);
+
 #endif

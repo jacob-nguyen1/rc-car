@@ -19,3 +19,36 @@ void GPIO_SetAF(GPIO_TypeDef* port, uint8_t pin, uint8_t af) {
 		port->AFR[1] |= af << (4*(pin-8));
 	}
 }
+
+void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, uint8_t activation) {
+	SYSCFG->EXTICR[pin/4] &= ~((0xF << (pin%4)*4));
+	SYSCFG->EXTICR[pin/4] |= (((uint32_t)port - GPIOA_BASE) >> 10) << (pin%4)*4;
+
+	EXTI->IMR |= 1 << pin;
+
+	switch (activation) {
+		case GPIO_INT_RISING:
+			EXTI->RTSR |= 1 << pin;
+			EXTI->FTSR &= ~(1 << pin);
+			break;
+		case GPIO_INT_FALLING:
+			EXTI->RTSR &= ~(1 << pin);
+			EXTI->FTSR |= 1 << pin;
+			break;
+		case GPIO_INT_BOTH:
+			EXTI->RTSR |= 1 << pin;
+			EXTI->FTSR |= 1 << pin;
+			break;
+		default:
+			break;
+	}
+
+	switch (pin) {
+		case 13:
+			NVIC_EnableIRQ(EXTI15_10_IRQn);
+			break;
+		default:
+			break;
+	}
+
+}

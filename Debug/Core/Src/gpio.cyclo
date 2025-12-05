@@ -1,3 +1,0 @@
-../Core/Src/gpio.c:3:6:GPIO_SetMode	1
-../Core/Src/gpio.c:8:6:GPIO_Write	2
-../Core/Src/gpio.c:13:6:GPIO_SetAF	4

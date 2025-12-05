@@ -10,8 +10,11 @@ int main(void) {
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
     // Enable TIM2 clock
     RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+    // Enable SYSCFG clock
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
 
     GPIO_SetMode(GPIOC, 13, GPIO_MODE_INPUT); // On-board USER pushbutton
+    GPIO_EnableInterrupt(GPIOC, 13, GPIO_INT_FALLING);
 
     //GPIO_SetMode(GPIOA, 5, GPIO_MODE_OUTPUT); // On-board LED
 
@@ -25,17 +28,18 @@ int main(void) {
     GPIO_SetMode(GPIOA, 5, GPIO_MODE_AF);
     GPIO_SetAF(GPIOA, 5, 1);
     PWM_INIT(TIM2, 1, 1000);
-
-    int x = 0;
     while(1) {
-    	for (volatile int i =0; i < 20000; i++);
-    	x++;
-    	PWM_SetDutyCycle(TIM2, 1, x%101);
     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) {
     		CarForward();
     	} else {
     		CarStop();
     	}
-
     }
+}
+
+void EXTI15_10_IRQHandler(void) {
+	static bool h = 1;
+	if (h) PWM_SetDutyCycle(TIM2, 1, 100);
+	else PWM_SetDutyCycle(TIM2, 1, 0);
+	h = !h;
 }
