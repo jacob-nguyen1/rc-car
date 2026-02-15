@@ -1,0 +1,214 @@
+ARM GAS  /tmp/ccHCnCkZ.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/main.c"
+  20              		.section	.text.main,"ax",%progbits
+  21              		.align	1
+  22              		.global	main
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  27              	main:
+  28              	.LFB134:
+   1:Core/Src/main.c **** #include "stm32f446xx.h"
+   2:Core/Src/main.c **** #include "gpio.h"
+   3:Core/Src/main.c **** #include "pwm.h"
+   4:Core/Src/main.c **** #include "car.h"
+   5:Core/Src/main.c **** 
+   6:Core/Src/main.c **** // FRONT = L298N SIDE
+   7:Core/Src/main.c **** 
+   8:Core/Src/main.c **** int main(void) {
+  29              		.loc 1 8 16 view -0
+  30              		.cfi_startproc
+  31              		@ Volatile: function does not return.
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34 0000 08B5     		push	{r3, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 3, -8
+  38              		.cfi_offset 14, -4
+   9:Core/Src/main.c ****     // Enable IO clock
+  10:Core/Src/main.c ****     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
+  39              		.loc 1 10 5 view .LVU1
+  40              		.loc 1 10 8 is_stmt 0 view .LVU2
+  41 0002 244B     		ldr	r3, .L7
+  42 0004 1A6B     		ldr	r2, [r3, #48]
+  43              		.loc 1 10 18 view .LVU3
+  44 0006 42F00702 		orr	r2, r2, #7
+  45 000a 1A63     		str	r2, [r3, #48]
+  11:Core/Src/main.c ****     // Enable TIM2 clock
+  12:Core/Src/main.c ****     RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+  46              		.loc 1 12 5 is_stmt 1 view .LVU4
+ARM GAS  /tmp/ccHCnCkZ.s 			page 2
+
+
+  47              		.loc 1 12 8 is_stmt 0 view .LVU5
+  48 000c 1A6C     		ldr	r2, [r3, #64]
+  49              		.loc 1 12 18 view .LVU6
+  50 000e 42F00102 		orr	r2, r2, #1
+  51 0012 1A64     		str	r2, [r3, #64]
+  13:Core/Src/main.c ****     // Enable SYSCFG clock
+  14:Core/Src/main.c ****     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+  52              		.loc 1 14 5 is_stmt 1 view .LVU7
+  53              		.loc 1 14 8 is_stmt 0 view .LVU8
+  54 0014 5A6C     		ldr	r2, [r3, #68]
+  55              		.loc 1 14 18 view .LVU9
+  56 0016 42F48042 		orr	r2, r2, #16384
+  57 001a 5A64     		str	r2, [r3, #68]
+  15:Core/Src/main.c **** 
+  16:Core/Src/main.c ****     GPIO_SetMode(GPIOC, 13, GPIO_MODE_INPUT); // On-board USER pushbutton
+  58              		.loc 1 16 5 is_stmt 1 view .LVU10
+  59 001c 1E4C     		ldr	r4, .L7+4
+  60 001e 0022     		movs	r2, #0
+  61 0020 0D21     		movs	r1, #13
+  62 0022 2046     		mov	r0, r4
+  63 0024 FFF7FEFF 		bl	GPIO_SetMode
+  64              	.LVL0:
+  17:Core/Src/main.c ****     GPIO_SetPull(GPIOC, 13, GPIO_PULL_UP);
+  65              		.loc 1 17 5 view .LVU11
+  66 0028 0122     		movs	r2, #1
+  67 002a 0D21     		movs	r1, #13
+  68 002c 2046     		mov	r0, r4
+  69 002e FFF7FEFF 		bl	GPIO_SetPull
+  70              	.LVL1:
+  18:Core/Src/main.c **** 
+  19:Core/Src/main.c ****     GPIO_SetMode(GPIOA, 5, GPIO_MODE_OUTPUT); // On-board LED
+  71              		.loc 1 19 5 view .LVU12
+  72 0032 1A4D     		ldr	r5, .L7+8
+  73 0034 0122     		movs	r2, #1
+  74 0036 0521     		movs	r1, #5
+  75 0038 2846     		mov	r0, r5
+  76 003a FFF7FEFF 		bl	GPIO_SetMode
+  77              	.LVL2:
+  20:Core/Src/main.c **** 
+  21:Core/Src/main.c ****     GPIO_SetMode(GPIOC, 0, GPIO_MODE_OUTPUT); // IN1
+  78              		.loc 1 21 5 view .LVU13
+  79 003e 0122     		movs	r2, #1
+  80 0040 0021     		movs	r1, #0
+  81 0042 2046     		mov	r0, r4
+  82 0044 FFF7FEFF 		bl	GPIO_SetMode
+  83              	.LVL3:
+  22:Core/Src/main.c ****     GPIO_SetMode(GPIOC, 1, GPIO_MODE_OUTPUT); // IN2
+  84              		.loc 1 22 5 view .LVU14
+  85 0048 0122     		movs	r2, #1
+  86 004a 1146     		mov	r1, r2
+  87 004c 2046     		mov	r0, r4
+  88 004e FFF7FEFF 		bl	GPIO_SetMode
+  89              	.LVL4:
+  23:Core/Src/main.c ****     GPIO_SetMode(GPIOB, 0, GPIO_MODE_OUTPUT); // IN3
+  90              		.loc 1 23 5 view .LVU15
+  91 0052 0122     		movs	r2, #1
+  92 0054 0021     		movs	r1, #0
+ARM GAS  /tmp/ccHCnCkZ.s 			page 3
+
+
+  93 0056 1248     		ldr	r0, .L7+12
+  94 0058 FFF7FEFF 		bl	GPIO_SetMode
+  95              	.LVL5:
+  24:Core/Src/main.c ****     GPIO_SetMode(GPIOA, 4, GPIO_MODE_OUTPUT); // IN4
+  96              		.loc 1 24 5 view .LVU16
+  97 005c 0122     		movs	r2, #1
+  98 005e 0421     		movs	r1, #4
+  99 0060 2846     		mov	r0, r5
+ 100 0062 FFF7FEFF 		bl	GPIO_SetMode
+ 101              	.LVL6:
+  25:Core/Src/main.c **** 
+  26:Core/Src/main.c ****     CarStop();
+ 102              		.loc 1 26 5 view .LVU17
+ 103 0066 FFF7FEFF 		bl	CarStop
+ 104              	.LVL7:
+ 105 006a 06E0     		b	.L2
+ 106              	.L6:
+  27:Core/Src/main.c **** 
+  28:Core/Src/main.c ****     while(1) {
+  29:Core/Src/main.c ****     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) {
+  30:Core/Src/main.c ****     		CarForward();
+ 107              		.loc 1 30 7 view .LVU18
+ 108 006c FFF7FEFF 		bl	CarForward
+ 109              	.LVL8:
+  31:Core/Src/main.c ****             GPIO_Write(GPIOA, 5, 1);
+ 110              		.loc 1 31 13 view .LVU19
+ 111 0070 0122     		movs	r2, #1
+ 112 0072 0521     		movs	r1, #5
+ 113 0074 0948     		ldr	r0, .L7+8
+ 114 0076 FFF7FEFF 		bl	GPIO_Write
+ 115              	.LVL9:
+ 116              	.L2:
+  28:Core/Src/main.c ****     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) {
+ 117              		.loc 1 28 5 view .LVU20
+  29:Core/Src/main.c ****     		CarForward();
+ 118              		.loc 1 29 6 view .LVU21
+  29:Core/Src/main.c ****     		CarForward();
+ 119              		.loc 1 29 17 is_stmt 0 view .LVU22
+ 120 007a 074B     		ldr	r3, .L7+4
+ 121 007c 1B69     		ldr	r3, [r3, #16]
+  29:Core/Src/main.c ****     		CarForward();
+ 122              		.loc 1 29 9 view .LVU23
+ 123 007e 13F4005F 		tst	r3, #8192
+ 124 0082 F3D0     		beq	.L6
+  32:Core/Src/main.c ****     	} else {
+  33:Core/Src/main.c ****     		CarStop();
+ 125              		.loc 1 33 7 is_stmt 1 view .LVU24
+ 126 0084 FFF7FEFF 		bl	CarStop
+ 127              	.LVL10:
+  34:Core/Src/main.c ****             GPIO_Write(GPIOA, 5, 0);
+ 128              		.loc 1 34 13 view .LVU25
+ 129 0088 0022     		movs	r2, #0
+ 130 008a 0521     		movs	r1, #5
+ 131 008c 0348     		ldr	r0, .L7+8
+ 132 008e FFF7FEFF 		bl	GPIO_Write
+ 133              	.LVL11:
+ 134 0092 F2E7     		b	.L2
+ARM GAS  /tmp/ccHCnCkZ.s 			page 4
+
+
+ 135              	.L8:
+ 136              		.align	2
+ 137              	.L7:
+ 138 0094 00380240 		.word	1073887232
+ 139 0098 00080240 		.word	1073874944
+ 140 009c 00000240 		.word	1073872896
+ 141 00a0 00040240 		.word	1073873920
+ 142              		.cfi_endproc
+ 143              	.LFE134:
+ 145              		.text
+ 146              	.Letext0:
+ 147              		.file 2 "/home/jacob/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machin
+ 148              		.file 3 "/home/jacob/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_s
+ 149              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f446xx.h"
+ 150              		.file 5 "Core/Inc/car.h"
+ 151              		.file 6 "Core/Inc/gpio.h"
+ARM GAS  /tmp/ccHCnCkZ.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+     /tmp/ccHCnCkZ.s:21     .text.main:00000000 $t
+     /tmp/ccHCnCkZ.s:27     .text.main:00000000 main
+     /tmp/ccHCnCkZ.s:138    .text.main:00000094 $d
+
+UNDEFINED SYMBOLS
+GPIO_SetMode
+GPIO_SetPull
+CarStop
+CarForward
+GPIO_Write

@@ -1,0 +1,382 @@
+ARM GAS  /tmp/ccCNnXKw.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"car.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.file 1 "Core/Src/car.c"
+  20              		.section	.text.SetWheelDir,"ax",%progbits
+  21              		.align	1
+  22              		.global	SetWheelDir
+  23              		.syntax unified
+  24              		.thumb
+  25              		.thumb_func
+  27              	SetWheelDir:
+  28              	.LVL0:
+  29              	.LFB134:
+   1:Core/Src/car.c **** #include "car.h"
+   2:Core/Src/car.c **** 
+   3:Core/Src/car.c **** void SetWheelDir(MotorSide side, MotorDir dir) {
+  30              		.loc 1 3 48 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		.loc 1 3 48 is_stmt 0 view .LVU1
+  35 0000 10B5     		push	{r4, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38              		.cfi_offset 4, -8
+  39              		.cfi_offset 14, -4
+   4:Core/Src/car.c **** 	switch(side) {
+  40              		.loc 1 4 2 is_stmt 1 view .LVU2
+  41 0002 10B1     		cbz	r0, .L2
+  42 0004 0128     		cmp	r0, #1
+  43 0006 2AD0     		beq	.L3
+  44              	.LVL1:
+  45              	.L1:
+   5:Core/Src/car.c **** 		case LEFT:
+   6:Core/Src/car.c **** 			switch(dir) {
+   7:Core/Src/car.c **** 				case FWD:
+   8:Core/Src/car.c **** 					GPIO_Write(GPIOC, 0, 0);
+   9:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 1);
+  10:Core/Src/car.c **** 					break;
+  11:Core/Src/car.c **** 				case BCK:
+  12:Core/Src/car.c **** 					GPIO_Write(GPIOC, 0, 1);
+  13:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+ARM GAS  /tmp/ccCNnXKw.s 			page 2
+
+
+  14:Core/Src/car.c **** 					break;
+  15:Core/Src/car.c **** 				case STOP:
+  16:Core/Src/car.c **** 					GPIO_Write(GPIOC, 0, 0);
+  17:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+  18:Core/Src/car.c **** 					break;
+  19:Core/Src/car.c **** 			}
+  20:Core/Src/car.c **** 			break;
+  21:Core/Src/car.c **** 		case RIGHT:
+  22:Core/Src/car.c **** 			switch(dir) {
+  23:Core/Src/car.c **** 				case FWD:
+  24:Core/Src/car.c **** 					GPIO_Write(GPIOB, 0, 0);
+  25:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 1);
+  26:Core/Src/car.c **** 					break;
+  27:Core/Src/car.c **** 				case BCK:
+  28:Core/Src/car.c **** 					GPIO_Write(GPIOB, 0, 1);
+  29:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+  30:Core/Src/car.c **** 					break;
+  31:Core/Src/car.c **** 				case STOP:
+  32:Core/Src/car.c **** 					GPIO_Write(GPIOB, 0, 0);
+  33:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+  34:Core/Src/car.c **** 					break;
+  35:Core/Src/car.c **** 			}
+  36:Core/Src/car.c **** 			break;
+  37:Core/Src/car.c **** 	}
+  38:Core/Src/car.c **** }
+  46              		.loc 1 38 1 is_stmt 0 view .LVU3
+  47 0008 10BD     		pop	{r4, pc}
+  48              	.LVL2:
+  49              	.L2:
+   6:Core/Src/car.c **** 				case FWD:
+  50              		.loc 1 6 4 is_stmt 1 view .LVU4
+  51 000a 0129     		cmp	r1, #1
+  52 000c 0FD0     		beq	.L5
+  53 000e 0229     		cmp	r1, #2
+  54 0010 19D0     		beq	.L6
+  55 0012 0029     		cmp	r1, #0
+  56 0014 F8D1     		bne	.L1
+  57              	.LBB2:
+   8:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 1);
+  58              		.loc 1 8 6 view .LVU5
+  59 0016 254C     		ldr	r4, .L10
+  60 0018 0022     		movs	r2, #0
+  61 001a 1146     		mov	r1, r2
+  62              	.LVL3:
+   8:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 1);
+  63              		.loc 1 8 6 is_stmt 0 view .LVU6
+  64 001c 2046     		mov	r0, r4
+  65              	.LVL4:
+   8:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 1);
+  66              		.loc 1 8 6 view .LVU7
+  67 001e FFF7FEFF 		bl	GPIO_Write
+  68              	.LVL5:
+   9:Core/Src/car.c **** 					break;
+  69              		.loc 1 9 6 is_stmt 1 view .LVU8
+  70 0022 0122     		movs	r2, #1
+  71 0024 1146     		mov	r1, r2
+  72 0026 2046     		mov	r0, r4
+ARM GAS  /tmp/ccCNnXKw.s 			page 3
+
+
+  73 0028 FFF7FEFF 		bl	GPIO_Write
+  74              	.LVL6:
+  10:Core/Src/car.c **** 				case BCK:
+  75              		.loc 1 10 6 view .LVU9
+  76 002c ECE7     		b	.L1
+  77              	.LVL7:
+  78              	.L5:
+  12:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+  79              		.loc 1 12 6 view .LVU10
+  80 002e 1F4C     		ldr	r4, .L10
+  81 0030 0122     		movs	r2, #1
+  82 0032 0021     		movs	r1, #0
+  83              	.LVL8:
+  12:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+  84              		.loc 1 12 6 is_stmt 0 view .LVU11
+  85 0034 2046     		mov	r0, r4
+  86              	.LVL9:
+  12:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+  87              		.loc 1 12 6 view .LVU12
+  88 0036 FFF7FEFF 		bl	GPIO_Write
+  89              	.LVL10:
+  13:Core/Src/car.c **** 					break;
+  90              		.loc 1 13 6 is_stmt 1 view .LVU13
+  91 003a 0022     		movs	r2, #0
+  92 003c 0121     		movs	r1, #1
+  93 003e 2046     		mov	r0, r4
+  94 0040 FFF7FEFF 		bl	GPIO_Write
+  95              	.LVL11:
+  14:Core/Src/car.c **** 				case STOP:
+  96              		.loc 1 14 6 view .LVU14
+  97 0044 E0E7     		b	.L1
+  98              	.LVL12:
+  99              	.L6:
+  16:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+ 100              		.loc 1 16 6 view .LVU15
+ 101 0046 194C     		ldr	r4, .L10
+ 102 0048 0022     		movs	r2, #0
+ 103 004a 1146     		mov	r1, r2
+ 104              	.LVL13:
+  16:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+ 105              		.loc 1 16 6 is_stmt 0 view .LVU16
+ 106 004c 2046     		mov	r0, r4
+ 107              	.LVL14:
+  16:Core/Src/car.c **** 					GPIO_Write(GPIOC, 1, 0);
+ 108              		.loc 1 16 6 view .LVU17
+ 109 004e FFF7FEFF 		bl	GPIO_Write
+ 110              	.LVL15:
+  17:Core/Src/car.c **** 					break;
+ 111              		.loc 1 17 6 is_stmt 1 view .LVU18
+ 112 0052 0022     		movs	r2, #0
+ 113 0054 0121     		movs	r1, #1
+ 114 0056 2046     		mov	r0, r4
+ 115 0058 FFF7FEFF 		bl	GPIO_Write
+ 116              	.LVL16:
+  18:Core/Src/car.c **** 			}
+ 117              		.loc 1 18 6 view .LVU19
+ 118 005c D4E7     		b	.L1
+ARM GAS  /tmp/ccCNnXKw.s 			page 4
+
+
+ 119              	.LVL17:
+ 120              	.L3:
+  18:Core/Src/car.c **** 			}
+ 121              		.loc 1 18 6 is_stmt 0 view .LVU20
+ 122              	.LBE2:
+  22:Core/Src/car.c **** 				case FWD:
+ 123              		.loc 1 22 4 is_stmt 1 view .LVU21
+ 124 005e 0129     		cmp	r1, #1
+ 125 0060 0ED0     		beq	.L7
+ 126 0062 0229     		cmp	r1, #2
+ 127 0064 17D0     		beq	.L8
+ 128 0066 0029     		cmp	r1, #0
+ 129 0068 CED1     		bne	.L1
+ 130              	.LBB3:
+  24:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 1);
+ 131              		.loc 1 24 6 view .LVU22
+ 132 006a 0022     		movs	r2, #0
+ 133 006c 1146     		mov	r1, r2
+ 134              	.LVL18:
+  24:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 1);
+ 135              		.loc 1 24 6 is_stmt 0 view .LVU23
+ 136 006e 1048     		ldr	r0, .L10+4
+ 137              	.LVL19:
+  24:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 1);
+ 138              		.loc 1 24 6 view .LVU24
+ 139 0070 FFF7FEFF 		bl	GPIO_Write
+ 140              	.LVL20:
+  25:Core/Src/car.c **** 					break;
+ 141              		.loc 1 25 6 is_stmt 1 view .LVU25
+ 142 0074 0122     		movs	r2, #1
+ 143 0076 0421     		movs	r1, #4
+ 144 0078 0E48     		ldr	r0, .L10+8
+ 145 007a FFF7FEFF 		bl	GPIO_Write
+ 146              	.LVL21:
+  26:Core/Src/car.c **** 				case BCK:
+ 147              		.loc 1 26 6 view .LVU26
+ 148 007e C3E7     		b	.L1
+ 149              	.LVL22:
+ 150              	.L7:
+  28:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+ 151              		.loc 1 28 6 view .LVU27
+ 152 0080 0122     		movs	r2, #1
+ 153 0082 0021     		movs	r1, #0
+ 154              	.LVL23:
+  28:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+ 155              		.loc 1 28 6 is_stmt 0 view .LVU28
+ 156 0084 0A48     		ldr	r0, .L10+4
+ 157              	.LVL24:
+  28:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+ 158              		.loc 1 28 6 view .LVU29
+ 159 0086 FFF7FEFF 		bl	GPIO_Write
+ 160              	.LVL25:
+  29:Core/Src/car.c **** 					break;
+ 161              		.loc 1 29 6 is_stmt 1 view .LVU30
+ 162 008a 0022     		movs	r2, #0
+ 163 008c 0421     		movs	r1, #4
+ 164 008e 0948     		ldr	r0, .L10+8
+ARM GAS  /tmp/ccCNnXKw.s 			page 5
+
+
+ 165 0090 FFF7FEFF 		bl	GPIO_Write
+ 166              	.LVL26:
+  30:Core/Src/car.c **** 				case STOP:
+ 167              		.loc 1 30 6 view .LVU31
+ 168 0094 B8E7     		b	.L1
+ 169              	.LVL27:
+ 170              	.L8:
+  32:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+ 171              		.loc 1 32 6 view .LVU32
+ 172 0096 0022     		movs	r2, #0
+ 173 0098 1146     		mov	r1, r2
+ 174              	.LVL28:
+  32:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+ 175              		.loc 1 32 6 is_stmt 0 view .LVU33
+ 176 009a 0548     		ldr	r0, .L10+4
+ 177              	.LVL29:
+  32:Core/Src/car.c **** 					GPIO_Write(GPIOA, 4, 0);
+ 178              		.loc 1 32 6 view .LVU34
+ 179 009c FFF7FEFF 		bl	GPIO_Write
+ 180              	.LVL30:
+  33:Core/Src/car.c **** 					break;
+ 181              		.loc 1 33 6 is_stmt 1 view .LVU35
+ 182 00a0 0022     		movs	r2, #0
+ 183 00a2 0421     		movs	r1, #4
+ 184 00a4 0348     		ldr	r0, .L10+8
+ 185 00a6 FFF7FEFF 		bl	GPIO_Write
+ 186              	.LVL31:
+  34:Core/Src/car.c **** 			}
+ 187              		.loc 1 34 6 view .LVU36
+ 188              	.LBE3:
+ 189              		.loc 1 38 1 is_stmt 0 view .LVU37
+ 190 00aa ADE7     		b	.L1
+ 191              	.L11:
+ 192              		.align	2
+ 193              	.L10:
+ 194 00ac 00080240 		.word	1073874944
+ 195 00b0 00040240 		.word	1073873920
+ 196 00b4 00000240 		.word	1073872896
+ 197              		.cfi_endproc
+ 198              	.LFE134:
+ 200              		.section	.text.CarForward,"ax",%progbits
+ 201              		.align	1
+ 202              		.global	CarForward
+ 203              		.syntax unified
+ 204              		.thumb
+ 205              		.thumb_func
+ 207              	CarForward:
+ 208              	.LFB135:
+  39:Core/Src/car.c **** 
+  40:Core/Src/car.c **** void CarForward() {
+ 209              		.loc 1 40 19 is_stmt 1 view -0
+ 210              		.cfi_startproc
+ 211              		@ args = 0, pretend = 0, frame = 0
+ 212              		@ frame_needed = 0, uses_anonymous_args = 0
+ 213 0000 08B5     		push	{r3, lr}
+ 214              	.LCFI1:
+ 215              		.cfi_def_cfa_offset 8
+ARM GAS  /tmp/ccCNnXKw.s 			page 6
+
+
+ 216              		.cfi_offset 3, -8
+ 217              		.cfi_offset 14, -4
+  41:Core/Src/car.c **** 	SetWheelDir(LEFT, FWD);
+ 218              		.loc 1 41 2 view .LVU39
+ 219 0002 0021     		movs	r1, #0
+ 220 0004 0846     		mov	r0, r1
+ 221 0006 FFF7FEFF 		bl	SetWheelDir
+ 222              	.LVL32:
+  42:Core/Src/car.c **** 	SetWheelDir(RIGHT, FWD);
+ 223              		.loc 1 42 2 view .LVU40
+ 224 000a 0021     		movs	r1, #0
+ 225 000c 0120     		movs	r0, #1
+ 226 000e FFF7FEFF 		bl	SetWheelDir
+ 227              	.LVL33:
+  43:Core/Src/car.c **** }
+ 228              		.loc 1 43 1 is_stmt 0 view .LVU41
+ 229 0012 08BD     		pop	{r3, pc}
+ 230              		.cfi_endproc
+ 231              	.LFE135:
+ 233              		.section	.text.CarStop,"ax",%progbits
+ 234              		.align	1
+ 235              		.global	CarStop
+ 236              		.syntax unified
+ 237              		.thumb
+ 238              		.thumb_func
+ 240              	CarStop:
+ 241              	.LFB136:
+  44:Core/Src/car.c **** 
+  45:Core/Src/car.c **** void CarStop() {
+ 242              		.loc 1 45 16 is_stmt 1 view -0
+ 243              		.cfi_startproc
+ 244              		@ args = 0, pretend = 0, frame = 0
+ 245              		@ frame_needed = 0, uses_anonymous_args = 0
+ 246 0000 08B5     		push	{r3, lr}
+ 247              	.LCFI2:
+ 248              		.cfi_def_cfa_offset 8
+ 249              		.cfi_offset 3, -8
+ 250              		.cfi_offset 14, -4
+  46:Core/Src/car.c **** 	SetWheelDir(LEFT, STOP);
+ 251              		.loc 1 46 2 view .LVU43
+ 252 0002 0221     		movs	r1, #2
+ 253 0004 0020     		movs	r0, #0
+ 254 0006 FFF7FEFF 		bl	SetWheelDir
+ 255              	.LVL34:
+  47:Core/Src/car.c **** 	SetWheelDir(RIGHT, STOP);
+ 256              		.loc 1 47 2 view .LVU44
+ 257 000a 0221     		movs	r1, #2
+ 258 000c 0120     		movs	r0, #1
+ 259 000e FFF7FEFF 		bl	SetWheelDir
+ 260              	.LVL35:
+  48:Core/Src/car.c **** }
+ 261              		.loc 1 48 1 is_stmt 0 view .LVU45
+ 262 0012 08BD     		pop	{r3, pc}
+ 263              		.cfi_endproc
+ 264              	.LFE136:
+ 266              		.text
+ 267              	.Letext0:
+ARM GAS  /tmp/ccCNnXKw.s 			page 7
+
+
+ 268              		.file 2 "/home/jacob/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/arm-none-eabi/include/machin
+ 269              		.file 3 "/home/jacob/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/arm-none-eabi/include/sys/_s
+ 270              		.file 4 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f446xx.h"
+ 271              		.file 5 "Core/Inc/car.h"
+ARM GAS  /tmp/ccCNnXKw.s 			page 8
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 car.c
+     /tmp/ccCNnXKw.s:21     .text.SetWheelDir:00000000 $t
+     /tmp/ccCNnXKw.s:27     .text.SetWheelDir:00000000 SetWheelDir
+     /tmp/ccCNnXKw.s:194    .text.SetWheelDir:000000ac $d
+     /tmp/ccCNnXKw.s:201    .text.CarForward:00000000 $t
+     /tmp/ccCNnXKw.s:207    .text.CarForward:00000000 CarForward
+     /tmp/ccCNnXKw.s:234    .text.CarStop:00000000 $t
+     /tmp/ccCNnXKw.s:240    .text.CarStop:00000000 CarStop
+
+UNDEFINED SYMBOLS
+GPIO_Write
