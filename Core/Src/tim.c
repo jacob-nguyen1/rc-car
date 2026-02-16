@@ -36,6 +36,10 @@ void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, uint8_t edge) {
         case 1:
             timer->CCMR1 &= ~TIM_CCMR1_CC1S;
             timer->CCMR1 |= TIM_CCMR1_CC1S_0;
+            timer->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+            timer->CCMR1 &= ~(TIM_CCMR1_IC1PSC);
+            timer->CCER |= TIM_CCER_CC1E;
+            break;
         default:
             while(1);
     }
