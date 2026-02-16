@@ -1,6 +1,6 @@
 #include "pwm.h"
 
-void PWM_INIT(TIM_TypeDef* timer, uint8_t channel, uint16_t freq) {
+void PWM_Init(TIM_TypeDef *timer, uint8_t channel, uint16_t freq) {
 	timer->ARR = 16000000UL / freq - 1;
 	switch (channel) {
 		case 1:
@@ -33,7 +33,7 @@ void PWM_INIT(TIM_TypeDef* timer, uint8_t channel, uint16_t freq) {
 	timer->CR1 |= TIM_CR1_CEN | TIM_CR1_ARPE;
 }
 
-void PWM_SetDutyCycle(TIM_TypeDef* timer, uint8_t channel, uint8_t duty) {
+void PWM_SetDutyCycle(TIM_TypeDef *timer, uint8_t channel, uint8_t duty) {
 	switch (channel) {
 		case 1:
 			timer->CCR1 = (timer->ARR * duty) / 100;

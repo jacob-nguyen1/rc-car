@@ -2,16 +2,13 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "car.h"
+#include "tim.h"
 
 // FRONT = L298N SIDE
 
 int main(void) {
     // Enable IO clock
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
-    // Enable TIM2 clock
-    RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-    // Enable SYSCFG clock
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
 
     GPIO_SetMode(GPIOC, 13, GPIO_MODE_INPUT); // On-board USER pushbutton
     GPIO_SetPull(GPIOC, 13, GPIO_PULL_UP);
@@ -25,13 +22,15 @@ int main(void) {
 
     CarStop();
 
+
+    TIM_Init(TIM2, 1000, 1000);
+    TIM_Start(TIM2);
+
     while(1) {
     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) {
     		CarForward();
-            GPIO_Write(GPIOA, 5, 1);
     	} else {
     		CarStop();
-            GPIO_Write(GPIOA, 5, 0);
     	}
     }
 }

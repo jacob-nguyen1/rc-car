@@ -40,6 +40,7 @@ Core/Src/main.c \
 Core/Src/gpio.c \
 Core/Src/pwm.c \
 Core/Src/car.c \
+Core/Src/tim.c \
 Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
