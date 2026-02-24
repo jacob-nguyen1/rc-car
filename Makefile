@@ -42,6 +42,7 @@ Core/Src/pwm.c \
 Core/Src/car.c \
 Core/Src/tim.c \
 Core/Src/debug.c \
+Core/Src/dma.c \
 Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
@@ -197,7 +198,7 @@ clean:
   
 # flash
 flash:
-	st-flash write build/ir_remote_car.bin 0x8000000
+	st-flash write build/ir_remote_car.bin 0x8000000 && st-flash reset
 #######################################
 # dependencies
 #######################################

@@ -1,7 +1,7 @@
 #include "tim.h"
 
 static uint32_t TIM_GetClock(TIM_TypeDef *timer) {
-    return 84000000;
+    return 16000000;
 }
 
 void TIM_Init(TIM_TypeDef *timer, uint32_t freq, uint32_t per) {
@@ -36,8 +36,20 @@ void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, uint8_t edge) {
         case 1:
             timer->CCMR1 &= ~TIM_CCMR1_CC1S;
             timer->CCMR1 |= TIM_CCMR1_CC1S_0;
-            timer->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
-            timer->CCMR1 &= ~(TIM_CCMR1_IC1PSC);
+            switch(edge) {
+                case TIM_RISING_EDGE:
+                    timer->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+                    break;
+                case TIM_FALLING_EDGE:
+                    timer->CCER &= ~(TIM_CCER_CC1P | TIM_CCER_CC1NP);
+                    timer->CCER |= TIM_CCER_CC1P;
+                    break;
+                case TIM_BOTH_EDGES:
+                    timer->CCER |= TIM_CCER_CC1P | TIM_CCER_CC1NP;
+                    break;
+                default:
+                    while(1);
+            }
             timer->CCER |= TIM_CCER_CC1E;
             break;
         default:

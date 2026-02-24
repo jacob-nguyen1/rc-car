@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stm32f4xx.h"
+#include "stm32f446xx.h"
 
 #define GPIO_MODE_INPUT  0b00
 #define GPIO_MODE_OUTPUT 0b01
