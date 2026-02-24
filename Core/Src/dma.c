@@ -35,7 +35,7 @@ void DMA_TIM3_CH1_Init(uint16_t* buffer, uint16_t size) {
     DMA1_Stream4->M0AR = (uint32_t)buffer;
 
     // Explicitly disable FIFO (use direct mode)
-DMA1_Stream4->FCR &= ~DMA_SxFCR_DMDIS;
+    DMA1_Stream4->FCR &= ~DMA_SxFCR_DMDIS;
 
     // Clear ALL flags for stream 4 before enabling
     DMA1->HIFCR = DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | 

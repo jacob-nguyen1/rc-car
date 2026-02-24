@@ -16,6 +16,7 @@ typedef enum {
 	STOP
 } MotorDir;
 
+void CarCommand(uint8_t comm);
 void SetWheelDir(MotorSide side, MotorDir dir);
 void CarForward();
 void CarStop();
