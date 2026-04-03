@@ -14,6 +14,10 @@ void TIM_Init(TIM_TypeDef *timer, uint32_t freq, uint32_t per) {
         RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
     } else if (timer == TIM5) {
         RCC->APB1ENR |= RCC_APB1ENR_TIM5EN;
+    } else if (timer == TIM6) {
+        RCC->APB1ENR |= RCC_APB1ENR_TIM6EN;
+    } else if (timer == TIM7) {
+        RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
     }
 
     uint32_t timer_clk = TIM_GetClock(timer);

@@ -20,7 +20,11 @@ uint16_t timestamps[BUF_SIZE];
 volatile bool dma_complete = false;
 volatile bool disable_dma = false;
 
+volatile bool isr_tim6 = false;
+volatile bool isr_tim7 = false;
+
 int main(void) {
+    { // config
     Debug_Init();
     // Enable IO clock
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
@@ -30,13 +34,23 @@ int main(void) {
 
     GPIO_SetMode(GPIOA, 5, GPIO_MODE_OUTPUT); // On-board LED
 
-    GPIO_SetMode(GPIOC, 0, GPIO_MODE_OUTPUT); // IN1
-    GPIO_SetMode(GPIOC, 1, GPIO_MODE_OUTPUT); // IN2
-    GPIO_SetMode(GPIOB, 0, GPIO_MODE_OUTPUT); // IN3
-    GPIO_SetMode(GPIOA, 4, GPIO_MODE_OUTPUT); // IN4
+    GPIO_SetMode(GPIOB, 6, GPIO_MODE_AF); // IN1 (TIM4_CH1) - Left
+    GPIO_SetMode(GPIOB, 7, GPIO_MODE_AF); // IN2 (TIM4_CH2) - Left
+    GPIO_SetMode(GPIOB, 8, GPIO_MODE_AF); // IN3 (TIM4_CH3) - Right
+    GPIO_SetMode(GPIOB, 9, GPIO_MODE_AF); // IN4 (TIM4_CH4) - Right
 
-    CarStop();
-    
+    GPIO_SetAF(GPIOB, 6, 2);
+    GPIO_SetAF(GPIOB, 7, 2);
+    GPIO_SetAF(GPIOB, 8, 2);
+    GPIO_SetAF(GPIOB, 9, 2);
+
+    RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+
+    PWM_Init(TIM4, 1, 20000);
+    PWM_Init(TIM4, 2, 20000);
+    PWM_Init(TIM4, 3, 20000);
+    PWM_Init(TIM4, 4, 20000);
+
     // input capture timer
     TIM_Init(TIM3, 1000000, 65535);
     TIM_InputCapture_Init(TIM3, 1, TIM_BOTH_EDGES);
@@ -52,31 +66,41 @@ int main(void) {
     DMA_TIM3_CH1_Init(timestamps, BUF_SIZE);
 
     // timeout for decoding instruction
-    TIM_Init(TIM4, 1000000, 10000); // 10ms
-    TIM4->DIER |= TIM_DIER_UIE;
-    NVIC_EnableIRQ(TIM4_IRQn);
+    TIM_Init(TIM6, 1000000, 10000); // 10ms
+    TIM6->DIER |= TIM_DIER_UIE;
+    NVIC_EnableIRQ(TIM6_DAC_IRQn);
 
     // timeout for repeat instructions
-    TIM_Init(TIM5, 100000, 10000); // 150ms
-    TIM5->DIER |= TIM_DIER_UIE;
-    NVIC_EnableIRQ(TIM5_IRQn);
-
-    printf("Starting...\r\n");
+    TIM_Init(TIM7, 100000, 20000);
+    TIM7->DIER |= TIM_DIER_UIE;
+    NVIC_EnableIRQ(TIM7_IRQn);
+    }
     while(1) {
         if (dma_complete) {
             uint8_t comm = IR_Decode(timestamps, BUF_SIZE);
             CarCommand(comm);
+
+            if (comm != 0xFF) GPIO_Write(GPIOA, 5, 1);
 
             DMA1_Stream4->NDTR = BUF_SIZE;
             DMA1_Stream4->M0AR = (uint32_t)timestamps;
             DMA1_Stream4->CR |= DMA_SxCR_EN;
             dma_complete = false;
         }
+        if (isr_tim6) {
+            printf("H");
+            fflush(stdout);
+            isr_tim6 = false;
+        }
+        if (isr_tim7) {
+            printf("S\r\n");
+            isr_tim7 = false;
+        }
         //button
     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) { // Pressed
-    		//CarForward();
+           //GPIO_Write(GPIOA, 5, 0); 
     	} else { // Un-pressed
-    		//CarStop();
+           //GPIO_Write(GPIOA, 5, 1); 
     	}
     }
 }
@@ -91,23 +115,31 @@ void DMA1_Stream4_IRQHandler(void) {
 void TIM3_IRQHandler(void) {
     if (TIM3->SR & TIM_SR_CC2IF) {
         TIM3->SR &= ~TIM_SR_CC2IF;
-        TIM4->CNT = 0;
-        TIM_Start(TIM4);
-        TIM5->CNT = 0;
-        TIM_Start(TIM5);
+        TIM6->CNT = 0;
+        TIM_Start(TIM6);
+        TIM7->CNT = 0;
+        TIM_Start(TIM7);
     }
 }
 
-void TIM4_IRQHandler(void) {
-    if (TIM4->SR & TIM_SR_UIF) {
-        TIM_Stop(TIM4);
-        TIM4->SR &= ~TIM_SR_UIF;
+void TIM6_DAC_IRQHandler(void) {
+    isr_tim6 = true;
+    if (TIM6->SR & TIM_SR_UIF) {
+        TIM_Stop(TIM6);
+        TIM6->SR &= ~TIM_SR_UIF;
+
+        // clear buffer
+        for (int i=0; i<BUF_SIZE; i++) {
+            timestamps[i] = 0;
+        }
 
         // reset DMA
         // Disable stream before config
         DMA1_Stream4->CR &= ~DMA_SxCR_EN;
         while (DMA1_Stream4->CR & DMA_SxCR_EN);
 
+        DMA1_Stream4->NDTR = BUF_SIZE;
+        DMA1_Stream4->M0AR = (uint32_t)timestamps;
         // Clear ALL flags for stream 4 before enabling
         DMA1->HIFCR = DMA_HIFCR_CTCIF4 | DMA_HIFCR_CHTIF4 | 
                         DMA_HIFCR_CTEIF4 | DMA_HIFCR_CDMEIF4 | DMA_HIFCR_CFEIF4;
@@ -115,16 +147,15 @@ void TIM4_IRQHandler(void) {
         // Enable
         DMA1_Stream4->CR |= DMA_SxCR_EN;
 
-        // clear buffer
-        for (int i=0; i<BUF_SIZE; i++) {
-            timestamps[i] = 0;
-        }
     }
 }
 
-void TIM5_IRQHandler(void) {
-    if (TIM5->SR & TIM_SR_UIF) {
-        TIM_Stop(TIM5);
-        TIM5->SR &= ~TIM_SR_UIF;
+void TIM7_IRQHandler(void) {
+    isr_tim7 = true;
+    if (TIM7->SR & TIM_SR_UIF) {
+        TIM_Stop(TIM7);
+        TIM7->SR &= ~TIM_SR_UIF;
+        CarSetState(CAR_STATE_STOPPED);
+        GPIO_Write(GPIOA, 5, 0);
     }
 }

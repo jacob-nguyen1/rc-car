@@ -3,21 +3,31 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "stm32f4xx.h"
+#include "stm32f446xx.h"
 
 typedef enum {
-	LEFT,
-	RIGHT
+	MOTOR_SIDE_LEFT,
+	MOTOR_SIDE_RIGHT
 } MotorSide;
 
 typedef enum {
-	FWD,
-	BCK,
-	STOP
+	MOTOR_DIR_FWD,
+	MOTOR_DIR_BCK,
+	MOTOR_DIR_STOP
 } MotorDir;
 
+typedef enum {
+	CAR_STATE_FORWARD,
+	CAR_STATE_REVERSE,
+	CAR_STATE_PIVOTLEFT,
+	CAR_STATE_PIVOTRIGHT,
+	CAR_STATE_STOPPED
+} CarState;
+
+void CarSetState(CarState state);
 void CarCommand(uint8_t comm);
-void SetWheelDir(MotorSide side, MotorDir dir);
+void CarSetSpeed(uint8_t speed);
+void SetWheelDir(MotorSide side, MotorDir dir, uint8_t speed);
 void CarForward();
 void CarStop();
 

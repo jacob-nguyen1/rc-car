@@ -17,16 +17,17 @@ uint8_t IR_Decode(uint16_t* timestamps, uint16_t size) {
         pulses[p++] = diff;
     } 
 
-
     int start = -1;  // Error value
 
     // find 9000 4500
     for (int i=1; i<size-1; i++) {
+        printf("%d ", pulses[i]);
         if (pulses[i-1] > 8500 && pulses[i-1] < 9500 && pulses[i] > 4000 && pulses[i] < 5000) {
             start = i+1;
             break;
         }
     }
+    printf("\r\n");
 
     if (start < 0 || start > 15) {
         return 0xFF;
