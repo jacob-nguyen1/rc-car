@@ -1,10 +1,11 @@
 #include "tim.h"
 
-static uint32_t TIM_GetClock(TIM_TypeDef *timer) {
+uint32_t TIM_GetClock(TIM_TypeDef *timer) {
+    // Allows dynamic prescaler calculations in main.c without hardcoding 16000000
     return 16000000;
 }
 
-void TIM_Init(TIM_TypeDef *timer, uint32_t freq, uint32_t per) {
+void TIM_Init(TIM_TypeDef *timer, TIM_InitTypeDef *init) {
     // Enable timer clock
     if (timer == TIM2) {
         RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
@@ -20,11 +21,8 @@ void TIM_Init(TIM_TypeDef *timer, uint32_t freq, uint32_t per) {
         RCC->APB1ENR |= RCC_APB1ENR_TIM7EN;
     }
 
-    uint32_t timer_clk = TIM_GetClock(timer);
-    uint32_t psc = (timer_clk / freq) - 1;
-
-    timer->PSC = psc; // prescaler
-    timer->ARR = per; // # of cycles before wraparound 
+    timer->PSC = init->Prescaler;
+    timer->ARR = init->Period;
 }
 
 void TIM_Start(TIM_TypeDef *timer) {

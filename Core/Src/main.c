@@ -46,13 +46,20 @@ int main(void) {
 
     RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
 
-    PWM_Init(TIM4, 1, 20000);
-    PWM_Init(TIM4, 2, 20000);
-    PWM_Init(TIM4, 3, 20000);
-    PWM_Init(TIM4, 4, 20000);
+    PWM_InitTypeDef pwm_init = { 
+        .Prescaler = 0, 
+        .Period = (TIM_GetClock(TIM4) / 20000) - 1, 
+        .Mode = PWM_MODE_1 
+    };
 
-    // input capture timer
-    TIM_Init(TIM3, 1000000, 65535);
+    PWM_Init(TIM4, 1, &pwm_init);
+    PWM_Init(TIM4, 2, &pwm_init);
+    PWM_Init(TIM4, 3, &pwm_init);
+    PWM_Init(TIM4, 4, &pwm_init);
+
+    // input capture timer 
+    TIM_InitTypeDef tim3_init = { .Prescaler = (TIM_GetClock(TIM3) / 1000000) - 1, .Period = 65535 };
+    TIM_Init(TIM3, &tim3_init);
     TIM_InputCapture_Init(TIM3, 1, TIM_BOTH_EDGES);
     TIM_InputCapture_Init(TIM3, 2, TIM_BOTH_EDGES);
     TIM3->DIER |= TIM_DIER_CC2IE; // used for timeout
@@ -66,12 +73,14 @@ int main(void) {
     DMA_TIM3_CH1_Init(timestamps, BUF_SIZE);
 
     // timeout for decoding instruction
-    TIM_Init(TIM6, 1000000, 10000); // 10ms
+    TIM_InitTypeDef tim6_init = { .Prescaler = (TIM_GetClock(TIM6) / 1000000) - 1, .Period = 10000 }; // 10ms
+    TIM_Init(TIM6, &tim6_init);
     TIM6->DIER |= TIM_DIER_UIE;
     NVIC_EnableIRQ(TIM6_DAC_IRQn);
 
     // timeout for repeat instructions
-    TIM_Init(TIM7, 100000, 20000);
+    TIM_InitTypeDef tim7_init = { .Prescaler = (TIM_GetClock(TIM7) / 100000) - 1, .Period = 20000 }; // 200ms
+    TIM_Init(TIM7, &tim7_init);
     TIM7->DIER |= TIM_DIER_UIE;
     NVIC_EnableIRQ(TIM7_IRQn);
     }
