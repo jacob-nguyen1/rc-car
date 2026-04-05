@@ -1,6 +1,6 @@
 #include "gpio.h"
 
-void GPIO_SetMode(GPIO_TypeDef* port, uint8_t pin, uint8_t mode) {
+void GPIO_SetMode(GPIO_TypeDef* port, uint8_t pin, GPIO_Mode_t mode) {
 	port->MODER &= ~(0b11 << (pin*2));
 	port->MODER |= (mode << (pin*2));
 }
@@ -10,7 +10,7 @@ void GPIO_Write(GPIO_TypeDef* port, uint8_t pin, bool val) {
 	else port->BSRR = (1<<(pin+16));
 }
 
-void GPIO_SetPull(GPIO_TypeDef* port, uint8_t pin, uint8_t pull) {
+void GPIO_SetPull(GPIO_TypeDef* port, uint8_t pin, GPIO_Pull_t pull) {
     port->PUPDR &= ~(0b11 << (pin*2));
     port->PUPDR |= (pull << (pin*2));
 }
@@ -25,7 +25,7 @@ void GPIO_SetAF(GPIO_TypeDef* port, uint8_t pin, uint8_t af) {
 	}
 }
 
-void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, uint8_t activation) {
+void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, GPIO_Edge_t activation) {
 	SYSCFG->EXTICR[pin/4] &= ~((0xF << (pin%4)*4));
 	SYSCFG->EXTICR[pin/4] |= (((uint32_t)port - GPIOA_BASE) >> 10) << (pin%4)*4;
 

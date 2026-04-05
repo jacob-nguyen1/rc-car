@@ -5,25 +5,29 @@
 #include <stdbool.h>
 #include "stm32f446xx.h"
 
-#define GPIO_MODE_INPUT  0b00
-#define GPIO_MODE_OUTPUT 0b01
-#define GPIO_MODE_AF     0b10
-#define GPIO_MODE_ANALOG 0b11
+typedef enum {
+    GPIO_MODE_INPUT  = 0x00U,
+    GPIO_MODE_OUTPUT = 0x01U,
+    GPIO_MODE_AF     = 0x02U,
+    GPIO_MODE_ANALOG = 0x03U
+} GPIO_Mode_t;
 
-void GPIO_SetMode(GPIO_TypeDef* port, uint8_t pin, uint8_t mode);
+typedef enum {
+    GPIO_INT_RISING  = 0x00U,
+    GPIO_INT_FALLING = 0x01U,
+    GPIO_INT_BOTH    = 0x02U
+} GPIO_Edge_t;
+
+typedef enum {
+    GPIO_PULL_NONE = 0x00U,
+    GPIO_PULL_UP   = 0x01U,
+    GPIO_PULL_DOWN = 0x02U
+} GPIO_Pull_t;
+
+void GPIO_SetMode(GPIO_TypeDef* port, uint8_t pin, GPIO_Mode_t mode);
 void GPIO_Write(GPIO_TypeDef* port, uint8_t pin, bool val);
 void GPIO_SetAF(GPIO_TypeDef* port, uint8_t pin, uint8_t af);
-
-#define GPIO_INT_RISING  0
-#define GPIO_INT_FALLING 1
-#define GPIO_INT_BOTH    2
-
-void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, uint8_t activation);
-
-#define GPIO_PULL_NONE 0
-#define GPIO_PULL_UP   1
-#define GPIO_PULL_DOWN 2
-
-void GPIO_SetPull(GPIO_TypeDef* port, uint8_t pin, uint8_t pull);
+void GPIO_SetPull(GPIO_TypeDef* port, uint8_t pin, GPIO_Pull_t pull);
+void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, GPIO_Edge_t edge);
 
 #endif
