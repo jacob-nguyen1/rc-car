@@ -4,6 +4,11 @@ A high-performance, bare-metal C robotics platform built on the STM32F446RE Nucl
 
 <!-- [Video demonstration to be added] -->
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c89e3380-e714-4fcd-8ee5-36035e8eff6d" width="45%" alt="RC Car Top View" />
+  <img src="https://github.com/user-attachments/assets/96b30f0f-e2c7-4770-95cd-4ee70ba23e2e" width="45%" alt="RC Car Side View" />
+</p>
+
 ## 🚀 Key Features
 
 * **Zero-CPU-Overhead IR Decoding (NEC Protocol):**
