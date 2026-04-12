@@ -23,6 +23,7 @@ void TIM_Init(TIM_TypeDef *timer, TIM_InitTypeDef *init) {
 
     timer->PSC = init->Prescaler;
     timer->ARR = init->Period;
+    timer->EGR |= TIM_EGR_UG;
 }
 
 void TIM_Start(TIM_TypeDef *timer) {
