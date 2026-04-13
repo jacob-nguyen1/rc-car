@@ -34,7 +34,7 @@ void TIM_Stop(TIM_TypeDef *timer) {
     timer->CR1 &= ~TIM_CR1_CEN; 
 }
 
-void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, uint8_t edge) {
+void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, TIM_Edge_TypeDef edge) {
     switch (channel) {
         case 1:
             timer->CCMR1 &= ~TIM_CCMR1_CC1S;
@@ -57,7 +57,7 @@ void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, uint8_t edge) {
             break;
         case 2:
             timer->CCMR1 &= ~TIM_CCMR1_CC2S;
-            timer->CCMR1 |= TIM_CCMR1_CC2S_1;
+            timer->CCMR1 |= TIM_CCMR1_CC2S_0;
             switch(edge) {
                 case TIM_RISING_EDGE:
                     timer->CCER &= ~(TIM_CCER_CC2P | TIM_CCER_CC2NP);

@@ -19,10 +19,12 @@ void TIM_Init(TIM_TypeDef *timer, TIM_InitTypeDef *init);
 void TIM_Start(TIM_TypeDef *timer);
 void TIM_Stop(TIM_TypeDef *timer);
 
-#define TIM_RISING_EDGE  0
-#define TIM_FALLING_EDGE 1  
-#define TIM_BOTH_EDGES   2
+typedef enum {
+    TIM_RISING_EDGE = 0,
+    TIM_FALLING_EDGE = 1,
+    TIM_BOTH_EDGES = 2
+} TIM_Edge_TypeDef;
 
-void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, uint8_t edge);
+void TIM_InputCapture_Init(TIM_TypeDef *timer, uint8_t channel, TIM_Edge_TypeDef edge);
 
 #endif

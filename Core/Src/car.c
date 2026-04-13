@@ -1,10 +1,19 @@
 #include "car.h"
 #include "pwm.h"
 
-static uint8_t car_speed = 100;
+static CarState current_state = CAR_STATE_STOPPED;
+static uint8_t car_speed = 77;
 
 void CarSetSpeed(uint8_t speed) {
 	car_speed = speed;
+}
+
+uint8_t CarGetSpeed(void) {
+	return car_speed;
+}
+
+CarState CarGetState(void) {
+	return current_state;
 }
 
 void CarCommand(uint8_t comm) {
@@ -95,7 +104,9 @@ void CarCommand(uint8_t comm) {
 	} 
 }
 
-void SetWheelDir(MotorSide side, MotorDir dir, uint8_t speed) {
+void SetWheelDir(MotorSide side, MotorDir dir, int32_t speed) {
+	if (speed < 0) speed = 0;
+	if (speed > 100) speed = 100;
 	switch(side) {
 		case MOTOR_SIDE_LEFT:
 			switch(dir) {
@@ -133,6 +144,7 @@ void SetWheelDir(MotorSide side, MotorDir dir, uint8_t speed) {
 }
 
 void CarSetState(CarState state) {
+	current_state = state;
 	switch (state) {
 		case CAR_STATE_FORWARD:
 			SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_FWD, car_speed);
@@ -153,6 +165,7 @@ void CarSetState(CarState state) {
 		case CAR_STATE_STOPPED:
 			SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_STOP, car_speed);
 			SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_STOP, car_speed);
+			printf("CAR STOP\r\n");
 			break;
 		default:
 			SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_STOP, car_speed);

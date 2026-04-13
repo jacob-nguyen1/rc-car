@@ -25,9 +25,11 @@ typedef enum {
 } CarState;
 
 void CarSetState(CarState state);
+CarState CarGetState(void);
 void CarCommand(uint8_t comm);
 void CarSetSpeed(uint8_t speed);
-void SetWheelDir(MotorSide side, MotorDir dir, uint8_t speed);
+uint8_t CarGetSpeed(void);
+void SetWheelDir(MotorSide side, MotorDir dir, int32_t speed);
 void CarForward();
 void CarStop();
 
