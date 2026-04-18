@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "dma.h"
 #include "ir.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -14,39 +15,56 @@
 
 #define BUF_SIZE 66
 
+volatile uint32_t global_uptime_ms = 0;
+
 // Buffer for timer input capture timestamps
 uint16_t timestamps[BUF_SIZE];
 
 volatile bool dma_complete = false;
 volatile bool disable_dma = false;
 
-volatile bool isr_tim6 = false;
-volatile bool isr_tim7 = false;
+volatile uint32_t encoder_left_last_capture = 0;
+volatile uint32_t encoder_right_last_capture = 0;
+
+volatile uint32_t encoder_left_period = STOPPED_PERIOD;
+volatile uint32_t encoder_right_period = STOPPED_PERIOD;
+
+volatile bool encoder_left_first_edge = true;
+volatile bool encoder_right_first_edge = true;
+
+volatile bool leftmotor = false;
+volatile bool rightmotor = false;
 
 static void MX_GPIO_Init(void) {
     // Enable IO clock for all active ports
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN;
 
     // Configure PC13 as On-board USER pushbutton with Pull-Up
-    GPIO_SetMode(GPIOC, 13, GPIO_MODE_INPUT);
-    GPIO_SetPull(GPIOC, 13, GPIO_PULL_UP);
+    GPIO_SetMode(GPIOC, 13, G_GPIO_MODE_INPUT);
+    GPIO_SetPull(GPIOC, 13, G_GPIO_PULL_UP);
 
     // Configure PA5 as On-board LED
-    GPIO_SetMode(GPIOA, 5, GPIO_MODE_OUTPUT);
+    GPIO_SetMode(GPIOA, 5, G_GPIO_MODE_OUTPUT);
 
     // Configure PA6 for IR Receiver Input
-    GPIO_SetMode(GPIOA, 6, GPIO_MODE_AF);
+    GPIO_SetMode(GPIOA, 6, G_GPIO_MODE_AF);
     GPIO_SetAF(GPIOA, 6, 2);
 
     // Configure PB6, PB7, PB8, PB9 for Motor PWM (TIM4)
-    GPIO_SetMode(GPIOB, 6, GPIO_MODE_AF);
-    GPIO_SetMode(GPIOB, 7, GPIO_MODE_AF);
-    GPIO_SetMode(GPIOB, 8, GPIO_MODE_AF);
-    GPIO_SetMode(GPIOB, 9, GPIO_MODE_AF);
+    GPIO_SetMode(GPIOB, 6, G_GPIO_MODE_AF);
+    GPIO_SetMode(GPIOB, 7, G_GPIO_MODE_AF);
+    GPIO_SetMode(GPIOB, 8, G_GPIO_MODE_AF);
+    GPIO_SetMode(GPIOB, 9, G_GPIO_MODE_AF);
     GPIO_SetAF(GPIOB, 6, 2);
     GPIO_SetAF(GPIOB, 7, 2);
     GPIO_SetAF(GPIOB, 8, 2);
     GPIO_SetAF(GPIOB, 9, 2);
+
+    // Configure PA0 and PA1 for LM393 Input
+    GPIO_SetMode(GPIOA, 0, G_GPIO_MODE_AF);
+    GPIO_SetMode(GPIOA, 1, G_GPIO_MODE_AF);
+    GPIO_SetAF(GPIOA, 0, 1);
+    GPIO_SetAF(GPIOA, 1, 1);
 }
 
 static void MX_TIM4_Init(void) {
@@ -67,12 +85,17 @@ static void MX_TIM4_Init(void) {
 
 static void MX_TIM3_Init(void) {
     // IR Receiver Input Capture timer (1MHz counting)
-    TIM_InitTypeDef tim3_init = { .Prescaler = (TIM_GetClock(TIM3) / 1000000) - 1, .Period = 65535 };
+    TIM_InitTypeDef tim3_init = { .Prescaler = (TIM_GetClock(TIM3) / 1000000) - 1, .Period = TIM_MAX_16BIT };
     TIM_Init(TIM3, &tim3_init);
     
     // Capture both edges to timestamp IR pulses
     TIM_InputCapture_Init(TIM3, 1, TIM_BOTH_EDGES);
     TIM_InputCapture_Init(TIM3, 2, TIM_BOTH_EDGES);
+
+    TIM3->CCER &= ~TIM_CCER_CC2E;
+    TIM3->CCMR1 &= ~TIM_CCMR1_CC2S;
+    TIM3->CCMR1 |= TIM_CCMR1_CC2S_1;
+    TIM3->CCER |= TIM_CCER_CC2E;
     
     // Enable timer interrupts for timeouts
     TIM3->DIER |= TIM_DIER_CC2IE;
@@ -96,12 +119,90 @@ static void MX_TIM7_Init(void) {
     NVIC_EnableIRQ(TIM7_IRQn);
 }
 
+static void MX_TIM2_Init(void) {
+    // speed encoder
+    TIM_InitTypeDef tim2_init = { .Prescaler = (TIM_GetClock(TIM2) / 1000000) - 1, .Period = TIM_MAX_32BIT };
+    TIM_Init(TIM2, &tim2_init);
+
+    TIM_InputCapture_Init(TIM2, 1, TIM_RISING_EDGE);
+    TIM_InputCapture_Init(TIM2, 2, TIM_RISING_EDGE);
+
+    TIM2->DIER |= TIM_DIER_CC1IE | TIM_DIER_CC2IE;
+    NVIC_EnableIRQ(TIM2_IRQn);
+    TIM_Start(TIM2);
+}
+
 static void MX_DMA_Init(void) {
     // Initialize DMA strictly for TIM3 CH1 transfers
     DMA_TIM3_CH1_Init(timestamps, BUF_SIZE);
 }
 
+static void PID_Update(void) {
+    CarState state = CarGetState();
+    
+    if (state == CAR_STATE_STOPPED) {
+        SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_STOP, 0);
+        SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_STOP, 0);
+        return;
+    } 
+    if (!(state == CAR_STATE_FORWARD || state == CAR_STATE_REVERSE ||
+          state == CAR_STATE_PIVOTLEFT || state == CAR_STATE_PIVOTRIGHT)) return;
+
+    int32_t target_period = CarGetTargetPeriod();
+    static float sum_err_left = 0, sum_err_right = 0;
+
+    if (target_period == 99999999) {
+        SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_STOP, 0);
+        SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_STOP, 0);
+        sum_err_left = 0;
+        sum_err_right = 0;
+        return;
+    }
+
+    int32_t error_left = (int32_t)encoder_left_period - target_period; 
+    int32_t error_right = (int32_t)encoder_right_period - target_period; 
+    
+    sum_err_left += (float)error_left;
+    sum_err_right += (float)error_right;
+
+    // Anti-Windup Clamping
+    if (sum_err_left * PID_KI > PID_I_LIMIT_PCT) sum_err_left = PID_I_LIMIT_PCT / PID_KI;
+    if (sum_err_left * PID_KI < -PID_I_LIMIT_PCT) sum_err_left = -PID_I_LIMIT_PCT / PID_KI;
+    if (sum_err_right * PID_KI > PID_I_LIMIT_PCT) sum_err_right = PID_I_LIMIT_PCT / PID_KI;
+    if (sum_err_right * PID_KI < -PID_I_LIMIT_PCT) sum_err_right = -PID_I_LIMIT_PCT / PID_KI;
+
+    int32_t base_pwm = CarGetBasePWM();
+    int32_t pwm_left = base_pwm;
+    int32_t pwm_right = base_pwm;
+
+    if (CarIsClosedLoop()) {
+        pwm_left  += (int32_t)(PID_KP * (float)error_left) + (int32_t)(sum_err_left * PID_KI); 
+        pwm_right += (int32_t)(PID_KP * (float)error_right) + (int32_t)(sum_err_right * PID_KI); 
+    }
+
+    switch(state) {
+        case CAR_STATE_FORWARD:
+            SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_FWD, pwm_left);
+            SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_FWD, pwm_right);
+            break;
+        case CAR_STATE_REVERSE:
+            SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_BCK, pwm_left);
+            SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_BCK, pwm_right);
+            break;
+        case CAR_STATE_PIVOTLEFT:
+            SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_BCK, pwm_left);
+            SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_FWD, pwm_right);
+            break;
+        case CAR_STATE_PIVOTRIGHT:
+            SetWheelDir(MOTOR_SIDE_LEFT, MOTOR_DIR_FWD, pwm_left);
+            SetWheelDir(MOTOR_SIDE_RIGHT, MOTOR_DIR_BCK, pwm_right);
+            break;
+    }
+}
+
+
 int main(void) {
+    SysTick_Config(16000000 / 1000);
     // Initial hardware clock/debug setup
     Debug_Init();
     
@@ -112,6 +213,10 @@ int main(void) {
     MX_DMA_Init();
     MX_TIM6_Init();
     MX_TIM7_Init();
+    MX_TIM2_Init();
+
+    CarSetRPM(40);
+
     while(1) {
         if (dma_complete) {
             uint8_t comm = IR_Decode(timestamps, BUF_SIZE);
@@ -124,21 +229,20 @@ int main(void) {
             DMA1_Stream4->CR |= DMA_SxCR_EN;
             dma_complete = false;
         }
-        if (isr_tim6) {
-            printf("H");
-            fflush(stdout);
-            isr_tim6 = false;
-        }
-        if (isr_tim7) {
-            printf("S\r\n");
-            isr_tim7 = false;
-        }
         //button
     	if (!(GPIOC->IDR & GPIO_IDR_ID13)) { // Pressed
            //GPIO_Write(GPIOA, 5, 0); 
     	} else { // Un-pressed
            //GPIO_Write(GPIOA, 5, 1); 
     	}
+        if (leftmotor) {
+            //printf("left motor: %lu\r\n", encoder_left_period);
+            leftmotor = false;
+        }
+        if (rightmotor) {
+            printf("right motor: %lu\r\n", 3000000/encoder_right_period);
+            rightmotor = false;
+        }
     }
 }
 
@@ -160,7 +264,6 @@ void TIM3_IRQHandler(void) {
 }
 
 void TIM6_DAC_IRQHandler(void) {
-    isr_tim6 = true;
     if (TIM6->SR & TIM_SR_UIF) {
         TIM_Stop(TIM6);
         TIM6->SR &= ~TIM_SR_UIF;
@@ -188,11 +291,55 @@ void TIM6_DAC_IRQHandler(void) {
 }
 
 void TIM7_IRQHandler(void) {
-    isr_tim7 = true;
     if (TIM7->SR & TIM_SR_UIF) {
         TIM_Stop(TIM7);
         TIM7->SR &= ~TIM_SR_UIF;
         CarSetState(CAR_STATE_STOPPED);
-        GPIO_Write(GPIOA, 5, 0);
+    }
+}
+
+void TIM2_IRQHandler(void) {
+    if (TIM2->SR & TIM_SR_CC1IF) {
+        TIM2->SR &= ~TIM_SR_CC1IF;
+        if (encoder_right_first_edge) {
+            encoder_right_last_capture = TIM2->CCR1;
+            encoder_right_first_edge = false;
+        } else {
+            uint32_t raw_period = TIM2->CCR1 - encoder_right_last_capture;
+            if (raw_period > (encoder_right_period / 2)) {
+                encoder_right_period = raw_period;
+                encoder_right_last_capture = TIM2->CCR1;
+                rightmotor = true;
+            }
+        }
+    }
+    if (TIM2->SR & TIM_SR_CC2IF) {
+        TIM2->SR &= ~TIM_SR_CC2IF;
+        if (encoder_left_first_edge) {
+            encoder_left_last_capture = TIM2->CCR2;
+            encoder_left_first_edge = false;
+        } else {
+            uint32_t raw_period = TIM2->CCR2 - encoder_left_last_capture;
+            if (raw_period > (encoder_left_period / 2)) {
+                encoder_left_period = raw_period;
+                encoder_left_last_capture = TIM2->CCR2;
+                leftmotor = true;
+            }
+        }
+    }
+}
+
+void SysTick_Handler(void) {
+    global_uptime_ms++;
+
+    if (global_uptime_ms % PID_INTERVAL_MS == 0) PID_Update();
+
+    if ((TIM2->CNT - encoder_left_last_capture) > WATCHDOG_TIMEOUT_US) {
+        encoder_left_period = CarGetTargetPeriod();
+        encoder_left_first_edge = true;
+    }
+    if ((TIM2->CNT - encoder_right_last_capture) > WATCHDOG_TIMEOUT_US) {
+        encoder_right_period = CarGetTargetPeriod();
+        encoder_right_first_edge = true;
     }
 }

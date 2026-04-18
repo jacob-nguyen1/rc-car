@@ -32,15 +32,15 @@ void GPIO_EnableInterrupt(GPIO_TypeDef* port, uint8_t pin, GPIO_Edge_t activatio
 	EXTI->IMR |= 1 << pin;
 
 	switch (activation) {
-		case GPIO_INT_RISING:
+		case G_GPIO_INT_RISING:
 			EXTI->RTSR |= 1 << pin;
 			EXTI->FTSR &= ~(1 << pin);
 			break;
-		case GPIO_INT_FALLING:
+		case G_GPIO_INT_FALLING:
 			EXTI->RTSR &= ~(1 << pin);
 			EXTI->FTSR |= 1 << pin;
 			break;
-		case GPIO_INT_BOTH:
+		case G_GPIO_INT_BOTH:
 			EXTI->RTSR |= 1 << pin;
 			EXTI->FTSR |= 1 << pin;
 			break;

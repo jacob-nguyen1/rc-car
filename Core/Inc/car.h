@@ -27,8 +27,12 @@ typedef enum {
 void CarSetState(CarState state);
 CarState CarGetState(void);
 void CarCommand(uint8_t comm);
-void CarSetSpeed(uint8_t speed);
-uint8_t CarGetSpeed(void);
+void CarSetRPM(int32_t target_rpm);
+int32_t CarGetTargetPeriod(void);
+uint8_t CarGetBasePWM(void);
+bool CarIsClosedLoop(void);
+void CarToggleClosedLoop(void);
+void CarUpdateLED(void);
 void SetWheelDir(MotorSide side, MotorDir dir, int32_t speed);
 void CarForward();
 void CarStop();

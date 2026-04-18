@@ -6,7 +6,7 @@ void Debug_Init(void) {
     RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
     RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
 
-    GPIO_SetMode(GPIOA, 2, GPIO_MODE_AF);
+    GPIO_SetMode(GPIOA, 2, G_GPIO_MODE_AF);
     GPIO_SetAF(GPIOA, 2, 7);
 
         // Make sure these are clear (no parity, 1 stop bit)
